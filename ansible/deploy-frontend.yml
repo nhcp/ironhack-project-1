@@ -1,0 +1,42 @@
+---
+- name: Deploy Vote and Result on frontend
+  hosts: frontend
+  become: true
+
+  tasks:
+    - name: Pull Vote image from Docker Hub
+      community.docker.docker_image:
+        name: nhcpde147/vote:latest
+        source: pull
+
+    - name: Run Vote container
+      community.docker.docker_container:
+        name: vote
+        image: nhcpde147/vote:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:80"
+        env:
+          REDIS_HOST: "10.0.2.70"
+          REDIS_PORT: "6379"
+
+    - name: Pull Result image from Docker Hub
+      community.docker.docker_image:
+        name: nhcpde147/result:latest
+        source: pull
+
+    - name: Run Result container
+      community.docker.docker_container:
+        name: result
+        image: nhcpde147/result:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "8081:80"
+        env:
+          PG_HOST: "10.0.2.163"
+          PG_PORT: "5432"
+          PG_USER: "postgres"
+          PG_PASSWORD: "postgres"
+          PG_DATABASE: "postgres"

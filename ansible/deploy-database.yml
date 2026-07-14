@@ -1,0 +1,24 @@
+---
+- name: Deploy Postgres on database
+  hosts: database
+  become: true
+
+  tasks:
+    - name: Pull Postgres image
+      community.docker.docker_image:
+        name: postgres:15-alpine
+        source: pull
+
+    - name: Run Postgres container
+      community.docker.docker_container:
+        name: db
+        image: postgres:15-alpine
+        state: started
+        restart_policy: always
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_USER: "postgres"
+          POSTGRES_PASSWORD: "postgres"
+        volumes:
+          - "pgdata:/var/lib/postgresql/data"

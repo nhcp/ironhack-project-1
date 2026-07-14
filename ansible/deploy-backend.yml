@@ -1,0 +1,38 @@
+---
+- name: Deploy Redis and Worker on backend
+  hosts: backend
+  become: true
+
+  tasks:
+    - name: Pull Redis image
+      community.docker.docker_image:
+        name: redis:alpine
+        source: pull
+
+    - name: Run Redis container
+      community.docker.docker_container:
+        name: redis
+        image: redis:alpine
+        state: started
+        restart_policy: always
+        ports:
+          - "6379:6379"
+
+    - name: Pull Worker image from Docker Hub
+      community.docker.docker_image:
+        name: nhcpde147/worker:latest
+        source: pull
+
+    - name: Run Worker container
+      community.docker.docker_container:
+        name: worker
+        image: nhcpde147/worker:latest
+        state: started
+        restart_policy: always
+        env:
+          REDIS_HOST: "localhost"
+          DB_HOST: "10.0.2.163"
+          DB_USERNAME: "postgres"
+          DB_PASSWORD: "postgres"
+          DB_NAME: "postgres"
+        network_mode: host
